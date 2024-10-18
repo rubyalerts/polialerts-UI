@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Manrope";
+  src: url('../../public/assets/font/Manrope-VariableFont_wght.ttf') format("truetype");
+}
+
+@html {
+  font-family: "Manrope";
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #6f6f6f;
+  border-radius: 10px;
+  height: 0.5rem;
+
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -0.5rem;
+
+  background-color: #2468cd;
+  height: 1.5rem;
+  border-radius: 50%;
+  width: 1.5rem;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #6f6f6f;
+  border-radius: 10px;
+  height: 0.5rem;
+}
+
+/* scroll bar color */
+.customScrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+
+.customScrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+
+}
+
+
+.customScrollbar::-webkit-scrollbar-thumb {
+  background: #6f6f6f;
+  border-radius: 20px;
+}
+
+
+select::-ms-expand {
+  display: none;
+}
