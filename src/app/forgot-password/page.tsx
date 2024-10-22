@@ -71,7 +71,7 @@ export default function page() {
                   {loading ? "Loading..." : "Send Reset Link"}
                 </button>
                 {message && (
-                  <p className="text-red-600 text-sm">{message}</p>
+                  <p className="text-green-600 text-sm">{message}</p>
                 )}
               </div>
             </form>
