@@ -45,64 +45,63 @@ export class UserRepository implements IUserRepository {
 
   //Fetch User By Id
   // Please specify the return type of this function
+
   async getUserById(userId: string): Promise<User | undefined> {
+    // Fetch user directly by ID
+    const userDocRef = doc(db, USERS_COLLECTION, userId);
+    const userSnapshot = await getDoc(userDocRef);
 
-    const userCollection = collection(db, USERS_COLLECTION);
-    const userSnapshot = await getDocs(userCollection);
-    const doc = userSnapshot.docs.find(doc => doc.id === userId);
-
-    if (!doc) {
-      return undefined;
+    if (!userSnapshot.exists()) {
+      return undefined; // User not found
     }
 
-    // get subscription info
-    const subscription_type = doc?.data().subscription_type;
-    const subscriptionDetailsCollection = collection(db, SUBSCRIPTION_TYPES_COLLECTION);
-    const subscriptionDetailsSnapshot = await getDocs(subscriptionDetailsCollection);
-    const subscriptionDetailsDoc = subscriptionDetailsSnapshot.docs.find(doc => doc.id === subscription_type);
-    const subscriptionDetailsData = subscriptionDetailsDoc?.data();
+    // Get subscription info
+    const subscription_type = userSnapshot.data().subscription_type;
+
+    // Fetch subscription details directly
+    const subscriptionDetailsDocRef = doc(db, SUBSCRIPTION_TYPES_COLLECTION, subscription_type);
+    const subscriptionDetailsSnapshot = await getDoc(subscriptionDetailsDocRef);
+    const subscriptionDetailsData = subscriptionDetailsSnapshot.exists() ? subscriptionDetailsSnapshot.data() : undefined;
 
     const subscriptionDetails: SubscriptionDetails = {
       channels_limit: subscriptionDetailsData?.channels_limit,
       name: subscriptionDetailsData?.name,
       recipients_limit: subscriptionDetailsData?.recipients_limit,
       report_alert_keywords_limit: subscriptionDetailsData?.report_alert_keywords_limit,
-    }
+    };
 
-    const channelsCollectionRef = collection(doc.ref, "channels");
+    // Fetch channels associated with the user
+    const channelsCollectionRef = collection(userDocRef, "channels");
     const channelsSnapshot = await getDocs(channelsCollectionRef);
-    const channels = channelsSnapshot.docs.map(doc => {
-      return {
-        id: doc.id,
-        main_category: doc.data().main_category,
-        sub_category: doc.data().sub_category,
-        real_time_alert_keywords: doc.data().real_time_alert_keywords,
-        report_alert_keywords: doc.data().report_alert_keywords,
-        recipients: doc.data().recipients,
-        quote_context: doc.data().quote_context,
-        tags: doc.data().tags,
-      }
-    }
-    );
+    const channels = channelsSnapshot.docs.map(channelDoc => ({
+      id: channelDoc.id,
+      main_category: channelDoc.data().main_category,
+      sub_category: channelDoc.data().sub_category,
+      real_time_alert_keywords: channelDoc.data().real_time_alert_keywords,
+      report_alert_keywords: channelDoc.data().report_alert_keywords,
+      recipients: channelDoc.data().recipients,
+      quote_context: channelDoc.data().quote_context,
+      tags: channelDoc.data().tags,
+    }));
 
+    // Construct user object
     const user: User = {
-      id: doc?.id,
-      firstName: doc?.data().firstName,
-      lastName: doc?.data().lastName,
-      email: doc?.data().email,
-      phoneNo: doc?.data().phoneNo,
-      street: doc?.data().street,
-      city: doc?.data().city,
-      country: doc?.data().country,
+      id: userSnapshot.id,
+      firstName: userSnapshot.data().firstName,
+      lastName: userSnapshot.data().lastName,
+      email: userSnapshot.data().email,
+      phoneNo: userSnapshot.data().phoneNo,
+      street: userSnapshot.data().street,
+      city: userSnapshot.data().city,
+      country: userSnapshot.data().country,
       channels: channels,
-      postalCode: doc?.data().postalCode,
-      subscription_type: doc?.data().subscription_type,
+      postalCode: userSnapshot.data().postalCode,
+      subscription_type: subscription_type,
       subscriptionDetails: subscriptionDetails,
-    }
+    };
 
     return user;
   }
-
   //Add Channel
   async addChannel(userId: string, channelId: string, channelData: IAddChannelRequestData): Promise<boolean> {
     try {
